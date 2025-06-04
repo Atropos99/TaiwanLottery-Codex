@@ -4,8 +4,9 @@ This repository contains a C# console application that estimates Power Lottery (
 
 ## Setup
 
-1. Install the .NET 6 SDK or later.
-2. Navigate to the `PowerLotteryPrediction` directory and restore dependencies:
+1. Install the .NET 8 SDK or later.
+2. Open `TaiwanLottery.sln` with Visual Studio or run commands via the solution.
+3. Navigate to the `PowerLotteryPrediction` directory and restore dependencies:
 
 ```bash
 dotnet restore
@@ -30,8 +31,9 @@ Run the application by supplying the Excel file path:
 dotnet run --project PowerLotteryPrediction <path-to-excel-file>
 ```
 
-The program lets you choose a statistical method (frequency or recency weighted)
-for estimating the appearance probability of each number. Probabilities for the
-six main numbers (1–38) and the special number (1–8) are reported separately.
-After displaying probabilities, the program also suggests a set of six main
-numbers and one special number with the highest calculated probabilities.
+The program lets you choose among five statistical methods — frequency,
+recency weighted, last 30 draws frequency, last 10 draws frequency, or a
+hybrid that averages frequency and recency. Probabilities for the six main
+numbers (1–38) and the special number (1–8) are reported separately. After
+displaying probabilities, the program also suggests a set of six main numbers
+and one special number with the highest calculated probabilities.
