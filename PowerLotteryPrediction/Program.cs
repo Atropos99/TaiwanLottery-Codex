@@ -12,7 +12,8 @@ namespace PowerLotteryPrediction
         RecencyWeighted = 2,
         Last30Frequency = 3,
         Last10Frequency = 4,
-        Hybrid = 5
+        Hybrid = 5,
+        TimeSeries = 6
     }
 
     class LotteryRecord
@@ -42,6 +43,7 @@ namespace PowerLotteryPrediction
             Console.WriteLine("3. 最近30期頻率");
             Console.WriteLine("4. 最近10期頻率");
             Console.WriteLine("5. 綜合(頻率+加權)計算機率");
+            Console.WriteLine("6. 時間序列分析(ARIMA)");
             Console.Write("輸入選項: ");
             if (!int.TryParse(Console.ReadLine(), out int choice) || !Enum.IsDefined(typeof(AnalysisMethod), choice))
             {
@@ -56,6 +58,7 @@ namespace PowerLotteryPrediction
                 AnalysisMethod.Last30Frequency => RecentFrequencyMain(records, 30),
                 AnalysisMethod.Last10Frequency => RecentFrequencyMain(records, 10),
                 AnalysisMethod.Hybrid => HybridMain(records),
+                AnalysisMethod.TimeSeries => TimeSeriesMain(records),
                 _ => FrequencyMain(records)
             };
             var specialProbs = method switch
@@ -65,6 +68,7 @@ namespace PowerLotteryPrediction
                 AnalysisMethod.Last30Frequency => RecentFrequencySpecial(records, 30),
                 AnalysisMethod.Last10Frequency => RecentFrequencySpecial(records, 10),
                 AnalysisMethod.Hybrid => HybridSpecial(records),
+                AnalysisMethod.TimeSeries => TimeSeriesSpecial(records),
                 _ => FrequencySpecial(records)
             };
             Console.WriteLine("主號機率:");
@@ -220,6 +224,49 @@ namespace PowerLotteryPrediction
             var freq = FrequencySpecial(records);
             var recency = RecencyWeightedSpecial(records);
             return freq.ToDictionary(kv => kv.Key, kv => (kv.Value + recency[kv.Key]) / 2);
+        }
+
+        static Dictionary<int, double> TimeSeriesMain(List<LotteryRecord> records)
+        {
+            var result = Enumerable.Range(MinMain, MaxMain - MinMain + 1)
+                                    .ToDictionary(n => n, _ => 0d);
+            foreach (int n in result.Keys.ToList())
+            {
+                var series = records.Select(r => r.MainNumbers.Contains(n) ? 1.0 : 0.0).ToList();
+                result[n] = Ar1Predict(series);
+            }
+            return result;
+        }
+
+        static Dictionary<int, double> TimeSeriesSpecial(List<LotteryRecord> records)
+        {
+            var result = Enumerable.Range(MinSpecial, MaxSpecial - MinSpecial + 1)
+                                    .ToDictionary(n => n, _ => 0d);
+            foreach (int n in result.Keys.ToList())
+            {
+                var series = records.Select(r => r.SpecialNumber.HasValue && r.SpecialNumber.Value == n ? 1.0 : 0.0).ToList();
+                result[n] = Ar1Predict(series);
+            }
+            return result;
+        }
+
+        static double Ar1Predict(IList<double> series)
+        {
+            if (series.Count == 0) return 0;
+            if (series.Count == 1) return series[0];
+            double mean = series.Average();
+            double num = 0, den = 0;
+            for (int i = 1; i < series.Count; i++)
+            {
+                num += (series[i - 1] - mean) * (series[i] - mean);
+                den += (series[i - 1] - mean) * (series[i - 1] - mean);
+            }
+            double phi = den == 0 ? 0 : num / den;
+            double c = mean - phi * mean;
+            double pred = c + phi * series[^1];
+            if (pred < 0) pred = 0;
+            if (pred > 1) pred = 1;
+            return pred;
         }
     }
 }
