@@ -33,3 +33,5 @@ dotnet run --project PowerLotteryPrediction <path-to-excel-file>
 The program lets you choose a statistical method (frequency or recency weighted)
 for estimating the appearance probability of each number. Probabilities for the
 six main numbers (1–38) and the special number (1–8) are reported separately.
+After displaying probabilities, the program also suggests a set of six main
+numbers and one special number with the highest calculated probabilities.

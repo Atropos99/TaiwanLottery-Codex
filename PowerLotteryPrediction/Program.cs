@@ -64,6 +64,17 @@ namespace PowerLotteryPrediction
             {
                 Console.WriteLine($"Number {kv.Key}: {kv.Value:P2}");
             }
+            // Predict numbers based on highest probabilities
+            var predictedMain = mainProbs.OrderByDescending(kv => kv.Value)
+                                         .Take(6)
+                                         .Select(kv => kv.Key)
+                                         .ToArray();
+            int predictedSpecial = specialProbs.OrderByDescending(kv => kv.Value)
+                                               .First().Key;
+
+            Console.WriteLine();
+            Console.WriteLine("Predicted main numbers: " + string.Join(", ", predictedMain));
+            Console.WriteLine($"Predicted special number: {predictedSpecial}");
         }
 
         static List<LotteryRecord> LoadRecords(string path, int count)
