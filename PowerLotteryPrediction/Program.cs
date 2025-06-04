@@ -64,7 +64,6 @@ namespace PowerLotteryPrediction
             {
                 Console.WriteLine($"Number {kv.Key}: {kv.Value:P2}");
             }
-
             // Predict numbers based on highest probabilities
             var predictedMain = mainProbs.OrderByDescending(kv => kv.Value)
                                          .Take(6)
