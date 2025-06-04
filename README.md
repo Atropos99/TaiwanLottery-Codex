@@ -36,4 +36,5 @@ recency weighted, last 30 draws frequency, last 10 draws frequency, or a
 hybrid that averages frequency and recency. Probabilities for the six main
 numbers (1–38) and the special number (1–8) are reported separately. After
 displaying probabilities, the program also suggests a set of six main numbers
-and one special number with the highest calculated probabilities.
+and one special number with the highest calculated probabilities. It also
+prints the least likely numbers for reference.
