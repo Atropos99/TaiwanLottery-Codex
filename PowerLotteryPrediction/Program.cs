@@ -86,9 +86,19 @@ namespace PowerLotteryPrediction
             int predictedSpecial = specialProbs.OrderByDescending(kv => kv.Value)
                                                .First().Key;
 
+            // Numbers with the lowest probabilities
+            var leastMain = mainProbs.OrderBy(kv => kv.Value)
+                                    .Take(6)
+                                    .Select(kv => kv.Key)
+                                    .ToArray();
+            int leastSpecial = specialProbs.OrderBy(kv => kv.Value)
+                                           .First().Key;
+
             Console.WriteLine();
             Console.WriteLine("預測主號: " + string.Join(", ", predictedMain));
             Console.WriteLine($"預測特別號: {predictedSpecial}");
+            Console.WriteLine("機率最低主號: " + string.Join(", ", leastMain));
+            Console.WriteLine($"機率最低特別號: {leastSpecial}");
         }
 
         static List<LotteryRecord> LoadRecords(string path, int count)
