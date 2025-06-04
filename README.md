@@ -4,11 +4,11 @@ This repository contains a C# console application that estimates Power Lottery (
 
 ## Setup
 
-1. Install the .NET 6 SDK or later.
-2. Navigate to the `PowerLotteryPrediction` directory and restore dependencies:
+1. Install the .NET 8 SDK or later.
+2. Restore dependencies for the solution:
 
 ```bash
-dotnet restore
+dotnet restore TaiwanLottery.sln
 ```
 
 ## Usage
