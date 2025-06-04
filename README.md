@@ -1,40 +1,31 @@
 # TaiwanLottery
 
-This repository contains a C# console application that estimates Power Lottery (威力彩) number probabilities from historical data stored in Excel.
+本倉庫包含一個 C# 主控台應用程式，用於從 Excel 儲存的歷史資料中估計威力彩號碼的機率。
 
-## Setup
+## 安裝
 
-1. Install the .NET 8 SDK or later.
-2. Open `TaiwanLottery.sln` with Visual Studio or run commands via the solution.
-3. Navigate to the `PowerLotteryPrediction` directory and restore dependencies:
+1. 安裝 .NET 8 SDK（或更新版本）。
+2. 使用 Visual Studio 開啟 `TaiwanLottery.sln`，或在此方案下執行指令。
+3. 切換到 `PowerLotteryPrediction` 目錄並還原相依套件：
 
 ```bash
 dotnet restore
 ```
 
-## Usage
+## 使用方式
 
-Prepare an Excel file with at least 100 past lottery records. The file should
-have the first sheet formatted as follows:
+準備一個至少包含 100 期歷史紀錄的 Excel 檔案，第一個工作表應依下列格式：
 
-- Columns **A** to **F** contain the six main numbers.
-- Column **G** (optional) contains the special number.
-- Row 1 is a header row.
+- **A** 至 **F** 欄放入六個主號。
+- **G** 欄（選填）放入特別號。
+- 第 1 列為標題列。
 
-All main numbers must be between **1** and **38**, and special numbers (column G)
-must be between **1** and **8**. The program validates these ranges and throws
-an error if any value is outside them.
+所有主號必須介於 **1** 到 **38**，特別號（第 G 欄）必須介於 **1** 到 **8**。程式會檢查範圍，若有超出將產生錯誤。
 
-Run the application by supplying the Excel file path:
+以 Excel 檔路徑執行應用程式：
 
 ```bash
 dotnet run --project PowerLotteryPrediction <path-to-excel-file>
 ```
 
-The program lets you choose among five statistical methods — frequency,
-recency weighted, last 30 draws frequency, last 10 draws frequency, or a
-hybrid that averages frequency and recency. Probabilities for the six main
-numbers (1–38) and the special number (1–8) are reported separately. After
-displaying probabilities, the program also suggests a set of six main numbers
-and one special number with the highest calculated probabilities. It also
-prints the least likely numbers for reference.
+程式提供五種統計方法可選：出現頻率、近期加權、最近 30 期頻率、最近 10 期頻率，以及頻率與加權的綜合。主號（1–38）與特別號（1–8）的機率會分開列出。顯示完機率後，程式也會推薦一組機率最高的六個主號及一個特別號，並列出機率最低的號碼供參考。
