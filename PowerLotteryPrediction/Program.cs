@@ -9,7 +9,10 @@ namespace PowerLotteryPrediction
     enum AnalysisMethod
     {
         Frequency = 1,
-        RecencyWeighted = 2
+        RecencyWeighted = 2,
+        Last30Frequency = 3,
+        Last10Frequency = 4,
+        Hybrid = 5
     }
 
     class LotteryRecord
@@ -28,41 +31,52 @@ namespace PowerLotteryPrediction
         {
             if (args.Length == 0)
             {
-                Console.WriteLine("Usage: dotnet run <excel-file>");
+                Console.WriteLine("使用方法：dotnet run <excel檔案>");
                 return;
             }
             string excelPath = args[0];
             List<LotteryRecord> records = LoadRecords(excelPath, 100);
-            Console.WriteLine("Select analysis method:");
-            Console.WriteLine("1. Frequency based probability");
-            Console.WriteLine("2. Recency weighted probability");
-            Console.Write("Enter choice: ");
+            Console.WriteLine("請選擇分析方法:");
+            Console.WriteLine("1. 依出現頻率計算機率");
+            Console.WriteLine("2. 依近期加權計算機率");
+            Console.WriteLine("3. 最近30期頻率");
+            Console.WriteLine("4. 最近10期頻率");
+            Console.WriteLine("5. 綜合(頻率+加權)計算機率");
+            Console.Write("輸入選項: ");
             if (!int.TryParse(Console.ReadLine(), out int choice) || !Enum.IsDefined(typeof(AnalysisMethod), choice))
             {
-                Console.WriteLine("Invalid choice");
+                Console.WriteLine("無效的選項");
                 return;
             }
             AnalysisMethod method = (AnalysisMethod)choice;
             var mainProbs = method switch
             {
+                AnalysisMethod.Frequency => FrequencyMain(records),
                 AnalysisMethod.RecencyWeighted => RecencyWeightedMain(records),
+                AnalysisMethod.Last30Frequency => RecentFrequencyMain(records, 30),
+                AnalysisMethod.Last10Frequency => RecentFrequencyMain(records, 10),
+                AnalysisMethod.Hybrid => HybridMain(records),
                 _ => FrequencyMain(records)
             };
             var specialProbs = method switch
             {
+                AnalysisMethod.Frequency => FrequencySpecial(records),
                 AnalysisMethod.RecencyWeighted => RecencyWeightedSpecial(records),
+                AnalysisMethod.Last30Frequency => RecentFrequencySpecial(records, 30),
+                AnalysisMethod.Last10Frequency => RecentFrequencySpecial(records, 10),
+                AnalysisMethod.Hybrid => HybridSpecial(records),
                 _ => FrequencySpecial(records)
             };
-            Console.WriteLine("Main number probabilities:");
+            Console.WriteLine("主號機率:");
             foreach (var kv in mainProbs.OrderBy(k => k.Key))
             {
-                Console.WriteLine($"Number {kv.Key}: {kv.Value:P2}");
+                Console.WriteLine($"號碼 {kv.Key}: {kv.Value:P2}");
             }
             Console.WriteLine();
-            Console.WriteLine("Special number probabilities:");
+            Console.WriteLine("特別號機率:");
             foreach (var kv in specialProbs.OrderBy(k => k.Key))
             {
-                Console.WriteLine($"Number {kv.Key}: {kv.Value:P2}");
+                Console.WriteLine($"號碼 {kv.Key}: {kv.Value:P2}");
             }
             // Predict numbers based on highest probabilities
             var predictedMain = mainProbs.OrderByDescending(kv => kv.Value)
@@ -73,8 +87,8 @@ namespace PowerLotteryPrediction
                                                .First().Key;
 
             Console.WriteLine();
-            Console.WriteLine("Predicted main numbers: " + string.Join(", ", predictedMain));
-            Console.WriteLine($"Predicted special number: {predictedSpecial}");
+            Console.WriteLine("預測主號: " + string.Join(", ", predictedMain));
+            Console.WriteLine($"預測特別號: {predictedSpecial}");
         }
 
         static List<LotteryRecord> LoadRecords(string path, int count)
@@ -91,14 +105,14 @@ namespace PowerLotteryPrediction
                 {
                     int val = ws.Cell(row, i + 1).GetValue<int>();
                     if (val < MinMain || val > MaxMain)
-                        throw new InvalidDataException($"Main number {val} out of range at row {row}, column {i + 1}");
+                        throw new InvalidDataException($"主號 {val} 在第 {row} 列第 {i + 1} 欄超出範圍");
                     numbers[i] = val;
                 }
                 int? special = null;
                 if (ws.Cell(row, 7).TryGetValue<int>(out int sp))
                 {
                     if (sp < MinSpecial || sp > MaxSpecial)
-                        throw new InvalidDataException($"Special number {sp} out of range at row {row}");
+                        throw new InvalidDataException($"特別號 {sp} 在第 {row} 列超出範圍");
                     special = sp;
                 }
                 results.Add(new LotteryRecord { MainNumbers = numbers, SpecialNumber = special });
@@ -170,6 +184,32 @@ namespace PowerLotteryPrediction
             double totalWeight = scores.Values.Sum();
             if (totalWeight == 0) return scores.ToDictionary(kv => kv.Key, _ => 0d);
             return scores.ToDictionary(kv => kv.Key, kv => kv.Value / totalWeight);
+        }
+
+        static Dictionary<int, double> RecentFrequencyMain(List<LotteryRecord> records, int recent)
+        {
+            var slice = records.TakeLast(recent).ToList();
+            return FrequencyMain(slice);
+        }
+
+        static Dictionary<int, double> RecentFrequencySpecial(List<LotteryRecord> records, int recent)
+        {
+            var slice = records.TakeLast(recent).ToList();
+            return FrequencySpecial(slice);
+        }
+
+        static Dictionary<int, double> HybridMain(List<LotteryRecord> records)
+        {
+            var freq = FrequencyMain(records);
+            var recency = RecencyWeightedMain(records);
+            return freq.ToDictionary(kv => kv.Key, kv => (kv.Value + recency[kv.Key]) / 2);
+        }
+
+        static Dictionary<int, double> HybridSpecial(List<LotteryRecord> records)
+        {
+            var freq = FrequencySpecial(records);
+            var recency = RecencyWeightedSpecial(records);
+            return freq.ToDictionary(kv => kv.Key, kv => (kv.Value + recency[kv.Key]) / 2);
         }
     }
 }
